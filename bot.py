@@ -112,9 +112,7 @@ async def check_payment(context: CallbackContext):
         product = pop_product()
         if product:
             user_history[data['chat_id']] = product
-            await context.bot.send_message(chat_id=data['chat_id'], text=f"✅ Payment received! Here's your info:
-
-{product}")
+            await context.bot.send_message(chat_id=data['chat_id'], text=f"✅ Payment received! Here's your info:\\n\\n{product}")
         else:
             await context.bot.send_message(chat_id=data['chat_id'], text="Sorry, we're out of stock.")
             await context.bot.send_message(chat_id=ADMIN_USERNAME, text="Stock exhausted. Please refill products.txt.")
