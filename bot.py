@@ -52,9 +52,7 @@ async def help_command(update: Update, context: CallbackContext):
 async def history(update: Update, context: CallbackContext):
     user_id = update.effective_user.id
     if user_id in user_history:
-        await update.message.reply_text(f"📦 Your last product:
-
-{user_history[user_id]}")
+        await update.message.reply_text(f"📦 Your last product:\n\n{user_history[user_id]}")
     else:
         await update.message.reply_text("📭 You haven't purchased anything yet.")
 
