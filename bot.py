@@ -39,7 +39,7 @@ async def stock(update: Update, context: CallbackContext):
 # Comando /help
 async def help_command(update: Update, context: CallbackContext):
     help_text = (
-        "📖 *Available Commands:*
+        " *Available Commands:*
 
 "
         "/start - Show menu
