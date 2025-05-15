@@ -39,19 +39,13 @@ async def stock(update: Update, context: CallbackContext):
 # Comando /help
 async def help_command(update: Update, context: CallbackContext):
     help_text = (
-        " *Available Commands:*
-
-"
-        "/start - Show menu
-"
-        "/buy - Buy info (same as button)
-"
-        "/stock - Check how many products remain
-"
-        "/history - See your last received product
-"
-        "/help - Show this help message"
-    )
+    "📖 *Available Commands:*\n\n"
+    "/start - Show menu\n"
+    "/buy - Buy info (same as button)\n"
+    "/stock - Check how many products remain\n"
+    "/history - See your last received product\n"
+    "/help - Show this help message"
+)
     await update.message.reply_text(help_text, parse_mode='Markdown')
 
 # Comando /history
