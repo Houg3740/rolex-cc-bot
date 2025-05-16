@@ -85,8 +85,8 @@ async def initiate_purchase(chat_id, context: CallbackContext):
         parse_mode="Markdown"
     )
 
-        context.chat_data['expected_amount'] = usdt_amount
-        context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
+    context.chat_data['expected_amount'] = usdt_amount
+    context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
 
     except Exception as e:
         logging.error(f"Price error: {e}")
