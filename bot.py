@@ -208,9 +208,9 @@ async def testmode(update: Update, context: CallbackContext):
     product = pop_product()
     if product:
         user_history[chat_id] = product
-      await update.message.reply_text(
-    f"🧪 Test mode activated!\n\n{product}"
-)
+        await update.message.reply_text(
+            f"🧪 Test mode activated!\n\n{product}"
+        )
     else:
         await update.message.reply_text("⚠️ No stock available for testing.")
 
