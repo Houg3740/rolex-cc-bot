@@ -108,9 +108,7 @@ async def confirm(update: Update, context: CallbackContext):
         product = pop_product()
         if product:
             user_history[chat_id] = product
-            await update.message.reply_text(f"✅ Payment confirmed! Here's your product:
-
-{product}")
+            await update.message.reply_text(f"✅ Payment confirmed! Here's your product:\n\n{product}")
         else:
             await update.message.reply_text("🚫 Out of stock.")
             await context.bot.send_message(chat_id=ADMIN_USERNAME, text="⚠️ STOCK EMPTY. Refill products.txt.")
