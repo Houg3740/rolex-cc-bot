@@ -174,39 +174,23 @@ async def status(update: Update, context: CallbackContext):
 
 async def help_command(update: Update, context: CallbackContext):
     text = (
-        "📖 *Available Commands:*
-
-"
-        "/start - Show main menu
-"
-        "/buy - Start a purchase
-"
-        "/confirm - Confirm payment
-"
-        "/stock - Show remaining product count
-"
-        "/history - Your last product
-"
-        "/testmode - Free test product
-"
-        "/feedback - Send feedback to admin
-"
-        "/status - Check bot status
-"
-        "/help - Show this help
-
-"
-        "🔒 *Admin only:*
-"
-        "/adminstock - Show full product list
-"
-        "/reload - Reload stock from backup
-"
-        "/clearhistory - Clear all user history
-
-"
-        f"👤 Admin: {ADMIN_USERNAME}"
+        "📄 *Available Commands:*\n\n"
+        "/start – Show main menu\n"
+        "/buy – Start a purchase\n"
+        "/confirm – Confirm payment\n"
+        "/stock – Show remaining product count\n"
+        "/history – Your last product\n"
+        "/testmode – Free test product\n"
+        "/feedback – Send feedback to admin\n"
+        "/status – Check bot status\n"
+        "/help – Show this help\n\n"
+        "🔐 *Admin only:*\n"
+        "/adminstock – Show full product list\n"
+        "/reload – Reload stock from backup\n"
+        "/clearhistory – Clear all user history\n\n"
+        f"👤 *Admin:* `{ADMIN_USERNAME}`"
     )
+
     await update.message.reply_text(text, parse_mode='Markdown')
 
 async def history(update: Update, context: CallbackContext):
