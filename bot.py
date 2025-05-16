@@ -89,8 +89,8 @@ async def initiate_purchase(chat_id, context: CallbackContext):
     context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
 
     except Exception as e:
-        logging.error(f"Price error: {e}")
-        await context.bot.send_message(chat_id=chat_id, text="❌ Could not retrieve USDT balance.")
+    logging.error(f"Price error: {e}")
+    await context.bot.send_message(chat_id=chat_id, text="❌ Could not retrieve USDT balance.")
     else:
         await update.message.reply_text("ℹ️ You have not received any product yet.")
 
