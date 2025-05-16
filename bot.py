@@ -130,8 +130,7 @@ async def adminstock(update: Update, context: CallbackContext):
     try:
         with open(PRODUCTS_FILE, 'r') as f:
             content = ''.join(f.readlines())
-       await update.message.reply_text(f"📄 Current stock:\n\n{content}")
-
+        await update.message.reply_text(f"📄 Current stock:\n\n{content}")
     except Exception as e:
         logging.error(f"Admin stock error: {e}")
         await update.message.reply_text("❌ Error displaying stock.")
