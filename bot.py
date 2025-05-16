@@ -14,7 +14,7 @@ ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 ADMIN_IDS = [ADMIN_USERNAME, '123456789']  # Puedes usar también tu ID numérico
 
 # URLs y parámetros
-TRONSCAN_API = "https://apilist.tronscanapi.com/api/account?address="
+BLOCKCYPHER_BASE = "https://api.blockcypher.com/v1/ltc/main/addrs/"
 PRODUCTS_FILE = "products.txt"
 BACKUP_FILE = "products_backup.txt"
 REQUIRED_USD = 6.00
@@ -71,127 +71,33 @@ async def start(update: Update, context: CallbackContext):
 async def buy(update: Update, context: CallbackContext):
     await initiate_purchase(update.effective_chat.id, context)
 
-usdt_amount = 6.00  # Monto fijo en USDT
-
-await context.bot.send_message(
-    chat_id=chat_id,
-    text=(
-        f"To receive your product, please send **{usdt_amount} USDT** (TRC20 network)\n\n"
-        f"to the following address:\n\n"
-        f"{USDT_ADDRESS}\n\n"
-        "Once you have sent the payment, use the command /confirm to verify it."
-    ),
-    parse_mode="Markdown"
-)
-
-context.chat_data['expected_amount'] = usdt_amount
-context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
-
-
-async def confirm(update: Update, context: CallbackContext):
-    chat_id = update.effective_chat.id
-    expected = context.chat_data.get("expected_amount")
-    initial = context.chat_data.get("initial_balance")
-    if expected is None or initial is None:
-        await update.message.reply_text("Please use /buy before confirming.")
-        return
-    new_balance = get_balance(USDT_ADDRESS)
-    if new_balance >= initial + expected:
-        product = pop_product()
-        if product:
-            user_history[chat_id] = product
-            await update.message.reply_text(f"✅ Payment confirmed! Here's your product:\n\n{product}")
-        else:
-            await update.message.reply_text("🚫 Out of stock.")
-            await context.bot.send_message(chat_id=ADMIN_USERNAME, text="⚠️ STOCK EMPTY. Refill products.txt.")
-    else:
-        await update.message.reply_text("⏳ Payment not detected yet. Try again shortly.")
-
-async def stock(update: Update, context: CallbackContext):
+async def initiate_purchase(chat_id, context: CallbackContext):
     try:
-        with open(PRODUCTS_FILE, 'r') as f:
-            count = len(f.readlines())
-        await update.message.reply_text(f"📦 Products remaining: {count}")
-    except Exception as e:
-        logging.error(f"Stock error: {e}")
-        await update.message.reply_text("❌ Cannot read stock file.")
+        usdt_amount = 6.00  # Monto fijo en USDT
 
-async def adminstock(update: Update, context: CallbackContext):
-    if str(update.effective_user.username) != ADMIN_USERNAME:
-        return
-    try:
-        with open(PRODUCTS_FILE, 'r') as f:
-            content = ''.join(f.readlines())
-        await update.message.reply_text(f"📄 Current stock:\n\n{content}")
-    except Exception as e:
-        logging.error(f"Admin stock error: {e}")
-        await update.message.reply_text("❌ Error displaying stock.")
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=(
+                f"To receive your product, please send **{usdt_amount} USDT** (TRC20 network)
 
-async def reload(update: Update, context: CallbackContext):
-    if str(update.effective_user.username) != ADMIN_USERNAME:
-        return
-    try:
-        with open(BACKUP_FILE, 'r') as backup:
-            data = backup.read()
-        with open(PRODUCTS_FILE, 'w') as main:
-            main.write(data)
-        await update.message.reply_text("🔄 Stock reloaded from backup.")
-    except Exception as e:
-        logging.error(f"Reload error: {e}")
-        await update.message.reply_text("❌ Could not reload stock.")
+"
+                f"to the following address:
 
-async def feedback(update: Update, context: CallbackContext):
-    message = ' '.join(context.args)
-    if not message:
-        await update.message.reply_text("✍️ Please send feedback like: /feedback Your message here")
-        return
+"
+                f"`{USDT_ADDRESS}`
 
-    await context.bot.send_message(
-        chat_id=ADMIN_USERNAME,
-        text=(
-            f"📢 Feedback from @{update.effective_user.username}:\n\n"
-            f"{message}"
+"
+                "Once you have sent the payment, use the command /confirm to verify it."
+            ),
+            parse_mode="Markdown"
         )
-    )
 
-    await update.message.reply_text("✅ Feedback sent. Thank you!")
-async def clearhistory(update: Update, context: CallbackContext):
-    if str(update.effective_user.username) != ADMIN_USERNAME:
-        return
-    user_history.clear()
-    await update.message.reply_text("🧹 User history cleared.")
+        context.chat_data['expected_amount'] = usdt_amount
+        context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
 
-async def status(update: Update, context: CallbackContext):
-    await update.message.reply_text("✅ RolexCCstore is online and running smoothly.")
-
-async def help_command(update: Update, context: CallbackContext):
-    text = (
-        "📄 *Available Commands:*\n\n"
-        "/start – Show main menu\n"
-        "/buy – Start a purchase\n"
-        "/confirm – Confirm payment\n"
-        "/stock – Show remaining product count\n"
-        "/history – Your last product\n"
-        "/testmode – Free test product\n"
-        "/feedback – Send feedback to admin\n"
-        "/status – Check bot status\n"
-        "/help – Show this help\n\n"
-        "🔐 *Admin only:*\n"
-        "/adminstock – Show full product list\n"
-        "/reload – Reload stock from backup\n"
-        "/clearhistory – Clear all user history\n\n"
-        f"👤 *Admin:* `{ADMIN_USERNAME}`"
-    )
-
-    await update.message.reply_text(text, parse_mode='Markdown')
-
-async def history(update: Update, context: CallbackContext):
-    chat_id = update.effective_chat.id
-    product = user_history.get(chat_id)
-    if product:
-       await update.message.reply_text(
-    f"📄 Your last product:\n\n{product}"
-)
+    except Exception as e:
+        logging.error(f"Price error: {e}")
+        await context.bot.send_message(chat_id=chat_id, text="❌ Could not retrieve USDT balance.")
     else:
         await update.message.reply_text("ℹ️ You have not received any product yet.")
 
