@@ -49,30 +49,22 @@ user_history = {}
 
 async def start(update: Update, context: CallbackContext):
     welcome_message = (
-        "👋 *Welcome to RolexCCstore!*
-
-"
-        "🛍️ Here’s what you can do:
-
-"
-        "/buy – Start a purchase process
-"
-        "/confirm – Confirm if your payment has been received
-"
-        "/stock – Check how many products remain
-"
-        "/history – View your last delivered product
-"
-        "/testmode – Receive a test product (free)
-"
-        "/feedback – Send feedback to the admin
-"
-        "/status – Check if the bot is working
-"
-        "/help – Show the full command list
-"
+        "👋 *Welcome to RolexCCstore!*\n\n"
+        "🛍️ Here’s what you can do:\n\n"
+        "/buy – Start the purchase process\n"
+        "/confirm – Confirm your payment\n"
+        "/stock – See how many products remain\n"
+        "/history – View your last product received\n"
+        "/testmode – Receive a test product (free)\n"
+        "/feedback – Send feedback to the admin\n"
+        "/status – Check if the bot is online\n"
+        "/help – Show all available commands\n"
     )
     await update.message.reply_text(welcome_message, parse_mode='Markdown')
+
+    keyboard = [[InlineKeyboardButton("Buy Info ($6)", callback_data='buy')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text("Please choose an option below:", reply_markup=reply_markup)
 
     keyboard = [[InlineKeyboardButton("Buy Info ($6)", callback_data='buy')]]
     reply_markup = InlineKeyboardMarkup(keyboard)
