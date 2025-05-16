@@ -153,9 +153,8 @@ async def feedback(update: Update, context: CallbackContext):
     if not message:
         await update.message.reply_text("✍️ Please send feedback like: /feedback Your message here")
         return
-    await context.bot.send_message(chat_id=ADMIN_USERNAME, text=f"📝 Feedback from @{update.effective_user.username}:
+   await context.bot.send_message(chat_id=ADMIN_USERNAME, text=f"📢 Feedback from @{update.effective_user.username}:\n\n{message}")
 
-{message}")
     await update.message.reply_text("✅ Feedback sent. Thank you!")
 
 async def clearhistory(update: Update, context: CallbackContext):
