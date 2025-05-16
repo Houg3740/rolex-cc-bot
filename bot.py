@@ -197,9 +197,9 @@ async def history(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
     product = user_history.get(chat_id)
     if product:
-        await update.message.reply_text(f"📦 Your last product:
-
-{product}")
+       await update.message.reply_text(
+    f"📄 Your last product:\n\n{product}"
+)
     else:
         await update.message.reply_text("ℹ️ You have not received any product yet.")
 
