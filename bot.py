@@ -86,9 +86,7 @@ await context.bot.send_message(
 
 context.chat_data['expected_amount'] = usdt_amount
 context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
-    except Exception as e:
-        logging.error(f"Price error: {e}")
-        await context.bot.send_message(chat_id=chat_id, text="❌ Could not retrieve LTC price.")
+
 
 async def confirm(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
