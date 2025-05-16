@@ -85,14 +85,14 @@ async def initiate_purchase(chat_id, context: CallbackContext):
         parse_mode="Markdown"
     )
 
+   try:
     context.chat_data['expected_amount'] = usdt_amount
     context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
-
-    except Exception as e:
+except Exception as e:
     logging.error(f"Price error: {e}")
     await context.bot.send_message(chat_id=chat_id, text="❌ Could not retrieve USDT balance.")
-    else:
-        await update.message.reply_text("ℹ️ You have not received any product yet.")
+else:
+    await update.message.reply_text("ℹ️ You have not received any product yet.")
 
 async def testmode(update: Update, context: CallbackContext):
     chat_id = update.effective_chat.id
