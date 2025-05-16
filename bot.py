@@ -75,18 +75,12 @@ async def initiate_purchase(chat_id, context: CallbackContext):
     try:
         usdt_amount = 6.00  # Monto fijo en USDT
 
-        await context.bot.send_message(
+       await context.bot.send_message(
             chat_id=chat_id,
             text=(
-                f"To receive your product, please send **{usdt_amount} USDT** (TRC20 network)
-
-"
-                f"to the following address:
-
-"
-                f"`{USDT_ADDRESS}`
-
-"
+                f"To receive your product, please send **{usdt_amount} USDT** (TRC20 network)\n\n"
+                f"to the following address:\n\n"
+                f"`{USDT_ADDRESS}`\n\n"
                 "Once you have sent the payment, use the command /confirm to verify it."
             ),
             parse_mode="Markdown"
