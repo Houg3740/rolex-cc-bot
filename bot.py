@@ -8,13 +8,12 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, Ca
 logging.basicConfig(level=logging.INFO)
 
 # Variables de entorno
-LTC_ADDRESS = os.getenv("LTC_ADDRESS")
+USDT_ADDRESS = os.getenv("USDT_ADDRESS")
 TOKEN = os.getenv("TOKEN")
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 ADMIN_IDS = [ADMIN_USERNAME, '123456789']  # Puedes usar también tu ID numérico
 
 # URLs y parámetros
-LTC_USD_URL = "https://api.coingecko.com/api/v3/simple/price?ids=litecoin&vs_currencies=usd"
 BLOCKCYPHER_BASE = "https://api.blockcypher.com/v1/ltc/main/addrs/"
 PRODUCTS_FILE = "products.txt"
 BACKUP_FILE = "products_backup.txt"
@@ -33,13 +32,12 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, Ca
 logging.basicConfig(level=logging.INFO)
 
 # Variables de entorno
-LTC_ADDRESS = os.getenv("LTC_ADDRESS")
+USDT_ADDRESS = os.getenv("USDT_ADDRESS")
 TOKEN = os.getenv("TOKEN")
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 ADMIN_IDS = [ADMIN_USERNAME, '123456789']  # Puedes usar también tu ID numérico
 
 # URLs y parámetros
-LTC_USD_URL = "https://api.coingecko.com/api/v3/simple/price?ids=litecoin&vs_currencies=usd"
 BLOCKCYPHER_BASE = "https://api.blockcypher.com/v1/ltc/main/addrs/"
 PRODUCTS_FILE = "products.txt"
 BACKUP_FILE = "products_backup.txt"
@@ -74,24 +72,19 @@ async def buy(update: Update, context: CallbackContext):
     await initiate_purchase(update.effective_chat.id, context)
 
 async def initiate_purchase(chat_id, context: CallbackContext):
-    try:
-        response = requests.get(LTC_USD_URL)
-        ltc_price = response.json().get("litecoin", {}).get("usd")
-        if ltc_price is None:
-            raise ValueError("Price unavailable.")
-        ltc_amount = round(REQUIRED_USD / ltc_price, 8)
+            usdt_amount = 6.00
         await context.bot.send_message(
     chat_id=chat_id,
     text=(
         f"To receive your information, send **{ltc_amount} LTC** to the following address:\n\n"
-        f"`{LTC_ADDRESS}`\n\n"
+        f"`{USDT_ADDRESS}`\n\n"
         "Once sent, use /confirm to validate your payment."
     ),
     parse_mode='Markdown'
 )
 
         context.chat_data['expected_amount'] = ltc_amount
-        context.chat_data['initial_balance'] = get_balance(LTC_ADDRESS)
+        context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
     except Exception as e:
         logging.error(f"Price error: {e}")
         await context.bot.send_message(chat_id=chat_id, text="❌ Could not retrieve LTC price.")
@@ -103,7 +96,7 @@ async def confirm(update: Update, context: CallbackContext):
     if expected is None or initial is None:
         await update.message.reply_text("Please use /buy before confirming.")
         return
-    new_balance = get_balance(LTC_ADDRESS)
+    new_balance = get_balance(USDT_ADDRESS)
     if new_balance >= initial + expected:
         product = pop_product()
         if product:
