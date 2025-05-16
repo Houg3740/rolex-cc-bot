@@ -14,7 +14,7 @@ ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 ADMIN_IDS = [ADMIN_USERNAME, '123456789']  # Puedes usar también tu ID numérico
 
 # URLs y parámetros
-BLOCKCYPHER_BASE = "https://api.blockcypher.com/v1/ltc/main/addrs/"
+TRONSCAN_API = "https://apilist.tronscanapi.com/api/account?address="
 PRODUCTS_FILE = "products.txt"
 BACKUP_FILE = "products_backup.txt"
 REQUIRED_USD = 6.00
@@ -72,19 +72,19 @@ async def buy(update: Update, context: CallbackContext):
     await initiate_purchase(update.effective_chat.id, context)
 
 async def initiate_purchase(chat_id, context: CallbackContext):
-            usdt_amount = 6.00
-        await context.bot.send_message(
-    chat_id=chat_id,
-    text=(
-        f"To receive your information, send **{ltc_amount} LTC** to the following address:\n\n"
-        f"`{USDT_ADDRESS}`\n\n"
-        "Once sent, use /confirm to validate your payment."
-    ),
-    parse_mode='Markdown'
-)
-
-        context.chat_data['expected_amount'] = ltc_amount
-        context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
+    usdt_amount = 6.00
+    await context.bot.send_message(
+        chat_id=chat_id,
+        text=(
+            f"To receive your product, please send **6 USDT** (TRC20 network)\n\n"
+            f"to the following address:\n\n"
+            f"`{USDT_ADDRESS}`\n\n"
+            "Once you have sent the payment, use the command /confirm to verify it."
+        ),
+        parse_mode='Markdown'
+    )
+    context.chat_data['expected_amount'] = usdt_amount
+    context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
     except Exception as e:
         logging.error(f"Price error: {e}")
         await context.bot.send_message(chat_id=chat_id, text="❌ Could not retrieve LTC price.")
