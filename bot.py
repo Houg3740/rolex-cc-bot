@@ -81,18 +81,15 @@ async def initiate_purchase(chat_id, context: CallbackContext):
             raise ValueError("Price unavailable.")
         ltc_amount = round(REQUIRED_USD / ltc_price, 8)
         await context.bot.send_message(
-            chat_id=chat_id,
-            text=(
-                f"To receive your information, send **{ltc_amount} LTC** to the following address:
+    chat_id=chat_id,
+    text=(
+        f"To receive your information, send **{ltc_amount} LTC** to the following address:\n\n"
+        f"`{LTC_ADDRESS}`\n\n"
+        "Once sent, use /confirm to validate your payment."
+    ),
+    parse_mode='Markdown'
+)
 
-"
-                f"`{LTC_ADDRESS}`
-
-"
-                "After payment, use /confirm to validate your purchase."
-            ),
-            parse_mode='Markdown'
-        )
         context.chat_data['expected_amount'] = ltc_amount
         context.chat_data['initial_balance'] = get_balance(LTC_ADDRESS)
     except Exception as e:
