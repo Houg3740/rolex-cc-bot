@@ -72,19 +72,18 @@ async def buy(update: Update, context: CallbackContext):
     await initiate_purchase(update.effective_chat.id, context)
 
 async def initiate_purchase(chat_id, context: CallbackContext):
-    try:
-        usdt_amount = 6.00  # Monto fijo en USDT
+    usdt_amount = 6.00  # Monto fijo en USDT
 
-       await context.bot.send_message(
-            chat_id=chat_id,
-            text=(
-                f"To receive your product, please send **{usdt_amount} USDT** (TRC20 network)\n\n"
-                f"to the following address:\n\n"
-                f"`{USDT_ADDRESS}`\n\n"
-                "Once you have sent the payment, use the command /confirm to verify it."
-            ),
-            parse_mode="Markdown"
-        )
+    await context.bot.send_message(
+        chat_id=chat_id,
+        text=(
+            f"To receive your product, please send **{usdt_amount} USDT** (TRC20 network)\n\n"
+            f"to the following address:\n\n"
+            f"`{USDT_ADDRESS}`\n\n"
+            "Once you have sent the payment, use the command /confirm to verify it."
+        ),
+        parse_mode="Markdown"
+    )
 
         context.chat_data['expected_amount'] = usdt_amount
         context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
