@@ -1,132 +1,114 @@
 import logging
 import os
-import time
 import requests
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, CallbackQueryHandler
 
-# --- Configuration ---
-TOKEN = os.getenv("BOT_TOKEN")
+# Configuración
+logging.basicConfig(level=logging.INFO)
+
+# Variables de entorno
 USDT_ADDRESS = os.getenv("USDT_ADDRESS")
-ADMIN_ID = int(os.getenv("ADMIN_ID"))
+TOKEN = os.getenv("TOKEN")
+ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
+ADMIN_IDS = [ADMIN_USERNAME, '123456789']  # Puedes usar también tu ID numérico
+
+# URLs y parámetros
+BLOCKCYPHER_BASE = "https://api.blockcypher.com/v1/ltc/main/addrs/"
 PRODUCTS_FILE = "products.txt"
-HISTORY_FILE = "history.txt"
-PRODUCT_PRICE = 6.00
+BACKUP_FILE = "products_backup.txt"
+REQUIRED_USD = 6.00
 
-# --- Logging ---
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
+user_history = {}
 
-# --- Utilities ---
-def get_balance(address):
-    try:
-        url = f"https://apilist.tronscanapi.com/api/account?address={address}"
-        res = requests.get(url)
-        data = res.json()
-        tokens = data.get("tokenBalances", [])
-        for token in tokens:
-            if token.get("tokenName") == "USDT":
-                return float(token.get("balance", 0)) / 1e6
-        return 0
-    except Exception as e:
-        logger.error(f"Balance check failed: {e}")
-        return 0
+async def start(update: Update, context: CallbackContext):
+    welcome_message = (
+        "👋 *Welcome to RolexCCstore!*\n\n"
+        "🛍️ Here’s what you can do:\n\n"
+        "/buy – Start the purchase process\n"
+        "/confirm – Confirm your payment\n"
+        "/stock – See how many products remain\n"
+        "/history – View your last product received\n"
+        "/testmode – Receive a test product (free)\n"
+        "/feedback – Send feedback to the admin\n"
+        "/status – Check if the bot is online\n"
+        "/help – Show all available commands\n"
+    )
+    await update.message.reply_text(welcome_message, parse_mode='Markdown')
 
-def pop_product():
-    with open(PRODUCTS_FILE, "r") as file:
-        lines = file.readlines()
-    if not lines:
-        return None
-    product = lines[0].strip()
-    with open(PRODUCTS_FILE, "w") as file:
-        file.writelines(lines[1:])
-    return product
-
-def get_remaining_count():
-    with open(PRODUCTS_FILE, "r") as file:
-        return len(file.readlines())
-
-def log_history(chat_id, product):
-    with open(HISTORY_FILE, "a") as file:
-        file.write(f"{chat_id}: {product}\n")
-
-def get_history(chat_id):
-    if not os.path.exists(HISTORY_FILE):
-        return "No history available."
-    with open(HISTORY_FILE, "r") as file:
-        lines = [line for line in file.readlines() if line.startswith(str(chat_id))]
-    return "\n".join(lines) if lines else "No purchases found."
-
-# --- Bot Actions ---
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [
-        [InlineKeyboardButton("Buy Product ($6)", callback_data="buy")],
-        [InlineKeyboardButton("Check Payment Status", callback_data="check")],
-        [InlineKeyboardButton("Remaining Stock", callback_data="stock")],
-        [InlineKeyboardButton("Purchase History", callback_data="history")],
-        [InlineKeyboardButton("Contact Support", url="https://t.me/support")]
-    ]
+    keyboard = [[InlineKeyboardButton("Buy Info ($6)", callback_data='buy')]]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Welcome! Please choose an option:", reply_markup=reply_markup)
+    await update.message.reply_text("Please choose an option below:", reply_markup=reply_markup)
 
-async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-    chat_id = query.message.chat.id
+async def buy(update: Update, context: CallbackContext):
+    await initiate_purchase(update.effective_chat.id, context)
 
-    if query.data == "buy":
-        context.user_data['initial_balance'] = get_balance(USDT_ADDRESS)
-        await query.message.reply_text(
-            f"To receive your product, send **{PRODUCT_PRICE} USDT** to the address below (TRC20):\n\n{USDT_ADDRESS}\n\nOnce sent, click 'Check Payment Status' again.",
+async def initiate_purchase(chat_id, context: CallbackContext):
+    try:
+        usdt_amount = 6.00  # Monto fijo en USDT
+
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=(
+                f"To receive your product, please send **{usdt_amount} USDT** (TRC20 network)\n\n"
+                f"to the following address:\n\n"
+                f"`{USDT_ADDRESS}`\n\n"
+                "Once you have sent the payment, use the command /confirm to verify it."
+            ),
             parse_mode="Markdown"
         )
 
-    elif query.data == "check":
-        current = get_balance(USDT_ADDRESS)
-        initial = context.user_data.get('initial_balance', current)
-        if current >= initial + PRODUCT_PRICE:
-            product = pop_product()
-            if product:
-                log_history(chat_id, product)
-                await query.message.reply_text(f"✅ Payment received. Here is your product:\n\n{product}")
-            else:
-                await query.message.reply_text("❌ Out of stock.")
-        else:
-            await query.message.reply_text("⏳ Payment not detected yet. Try again shortly.")
+        context.chat_data['expected_amount'] = usdt_amount
+        context.chat_data['initial_balance'] = get_balance(USDT_ADDRESS)
 
-    elif query.data == "stock":
-        count = get_remaining_count()
-        await query.message.reply_text(f"📦 {count} products remaining.")
+    except Exception as e:
+        logging.error(f"Price error: {e}")
+        await context.bot.send_message(chat_id=chat_id, text="❌ Could not retrieve USDT balance.")
 
-    elif query.data == "history":
-        history = get_history(chat_id)
-        await query.message.reply_text(f"🧾 Your purchase history:\n{history}")
-
-# --- Admin Commands ---
-async def test_purchase(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID:
-        return await update.message.reply_text("Unauthorized.")
+async def testmode(update: Update, context: CallbackContext):
+    chat_id = update.effective_chat.id
     product = pop_product()
     if product:
-        log_history(update.effective_user.id, product)
-        await update.message.reply_text(f"[TEST] Product delivered: {product}")
+        user_history[chat_id] = product
+        await update.message.reply_text(
+            f"🧪 Test mode activated!\n\n{product}"
+        )
     else:
-        await update.message.reply_text("[TEST] No products available.")
+        await update.message.reply_text("⚠️ No stock available for testing.")
 
-async def full_stock(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID:
-        return await update.message.reply_text("Unauthorized.")
-    with open(PRODUCTS_FILE, "r") as file:
-        stock = file.read()
-    await update.message.reply_text(f"📄 Stock file content:\n{stock}")
+async def button(update: Update, context: CallbackContext):
+    query = update.callback_query
+    await query.answer()
+    if query.data == "buy":
+        await initiate_purchase(query.message.chat_id, context)
 
-# --- Main ---
-if __name__ == "__main__":
+def get_balance(address):
+    try:
+        url = f"{BLOCKCYPHER_BASE}{address}/balance"
+        res = requests.get(url)
+        return res.json().get("total_received", 0) / 1e8
+    except Exception as e:
+        logging.error(f"Balance error: {e}")
+        return 0
+
+def pop_product():
+    try:
+        with open(PRODUCTS_FILE, 'r') as file:
+            lines = file.readlines()
+        if not lines:
+            return None
+        product = lines[0].strip()
+        with open(PRODUCTS_FILE, 'w') as file:
+            file.writelines(lines[1:])
+        return product
+    except Exception as e:
+        logging.error(f"Pop product error: {e}")
+        return None
+
+if __name__ == '__main__':
     app = ApplicationBuilder().token(TOKEN).build()
-
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("test", test_purchase))
-    app.add_handler(CommandHandler("fullstock", full_stock))
-    app.add_handler(CallbackQueryHandler(button_handler))
-
+    app.add_handler(CommandHandler("buy", buy))
+    app.add_handler(CommandHandler("testmode", testmode))
+    app.add_handler(CallbackQueryHandler(button))
     app.run_polling()
