@@ -104,8 +104,7 @@ async def history(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     product = context.chat_data.get("last_product")
     if product:
-        await update.message.reply_text(f"📦 Your last product:
-{product}")
+        await update.message.reply_text(f"📦 Your last product:\n{product}")
     else:
         await update.message.reply_text("ℹ️ You have not received any product yet.")
 
