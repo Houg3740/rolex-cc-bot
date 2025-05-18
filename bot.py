@@ -134,7 +134,7 @@ async def button(update: Update, context: CallbackContext):
     elif query.data == "feedback":
         await query.message.reply_text("✍️ Please use /feedback followed by your message.")
     elif query.data == "status":
-        await status(update, context)
+        await query.message.reply_text("✅ Bot is running correctly.")
     else:
         await query.message.reply_text("❓ Unknown option.")
 
