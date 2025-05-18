@@ -122,22 +122,42 @@ async def testmode(update: Update, context: CallbackContext):
 async def button(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
+    data = query.data
 
-    chat_id = query.message.chat.id  # Asegúrate que sea .id, no solo chat
-
-    if query.data == "buy":
-        await initiate_purchase(chat_id, context)
-    elif query.data == "confirm":
-        await confirm(update, context)
-    elif query.data == "history":
-        await history(update, context)
-    elif query.data == "feedback":
+    if data == "buy":
+        await initiate_purchase(query.message.chat.id, context)
+    elif data == "confirm":
+        await confirm_button(update, context)
+    elif data == "history":
+        await history_button(update, context)
+    elif data == "feedback":
         await query.message.reply_text("✍️ Please use /feedback followed by your message.")
-    elif query.data == "status":
-        await query.message.reply_text("✅ Bot is running correctly.")
+    elif data == "status":
+        await status(update, context)
     else:
         await query.message.reply_text("❓ Unknown option.")
+        
+async def confirm_button(update: Update, context: CallbackContext):
+    chat_id = update.callback_query.message.chat.id
+    current_balance = get_balance(USDT_ADDRESS)
+    initial_balance = context.chat_data.get('initial_balance', current_balance)
+    if current_balance >= initial_balance + REQUIRED_USD:
+        product = pop_product()
+        if product:
+            user_history[chat_id] = product
+            await update.callback_query.message.reply_text(f"✅ Payment confirmed! Here is your product:\n\n{product}")
+        else:
+            await update.callback_query.message.reply_text("❌ No products available.")
+    else:
+        await update.callback_query.message.reply_text("⏳ Payment not detected yet. Try again later.")
 
+async def history_button(update: Update, context: CallbackContext):
+    chat_id = update.callback_query.message.chat.id
+    if chat_id in user_history:
+        await update.callback_query.message.reply_text(f"📜 Your last product:\n{user_history[chat_id]}")
+    else:
+        await update.callback_query.message.reply_text("ℹ️ You have not received any product yet.")
+        
 def get_balance(address):
     try:
         url = f"{BLOCKCYPHER_BASE}{address}/balance"
