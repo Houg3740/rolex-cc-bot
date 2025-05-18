@@ -27,12 +27,9 @@ async def start(update: Update, context: CallbackContext):
         "🛍️ Here’s what you can do:\n\n"
         "/buy – Start the purchase process\n"
         "/confirm – Confirm your payment\n"
-        "/stock – See how many products remain\n"
         "/history – View your last product received\n"
-        "/testmode – Receive a test product (free)\n"
         "/feedback – Send feedback to the admin\n"
         "/status – Check if the bot is online\n"
-        "/help – Show all available commands\n"
     )
     await update.message.reply_text(welcome_message, parse_mode='Markdown')
 
