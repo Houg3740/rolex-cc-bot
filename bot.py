@@ -94,9 +94,7 @@ async def confirm(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if product:
             context.chat_data["last_product"] = product
             log_history(chat_id, product)
-           await update.message.reply_text(f"""✅ Payment confirmed! Here's your product:
-
-{product}""")
+          await update.message.reply_text(f"✅ Payment confirmed! Here's your product:\n{product}")
         else:
             await update.message.reply_text("🚫 Out of stock.")
     else:
