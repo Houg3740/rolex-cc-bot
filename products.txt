@@ -1,2 +1,4 @@
-Product 1 info
-Product 2 info
+Product 1 xx is the best ( first product ) here you can put all the cc info
+Product 2 This is the second product
+Product 3 this is the third one, is very easy to edit 
+Product 4 and so on with the rest  on the products
